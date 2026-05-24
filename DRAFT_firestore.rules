@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isVerified() {
+      // In development environments with AI Studio Google login, sometimes email_verified might not be easily available or checked the same way depending on provider, but the rules dictate we must check it.
+      // Wait, in Firebase AI Studio template, Google login sets email_verified to true. 
+      return request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['userId', 'time', 'morning', 'evening', 'createdAt', 'updatedAt'])
+        && (data.keys().size() == 6 || (data.keys().size() == 7 && data.keys().hasAll(['note'])))
+        && data.userId is string && data.userId == request.auth.uid
+        && data.time is string && data.time.size() <= 100
+        && data.morning is map
+        && data.morning.keys().hasAll(['fed', 'ateAll', 'drank', 'pooped'])
+        && data.morning.keys().size() == 4
+        && data.morning.fed is bool
+        && data.morning.ateAll is bool
+        && data.morning.drank is bool
+        && data.morning.pooped is bool
+        && data.evening is map
+        && data.evening.keys().hasAll(['ateLeaf', 'leafType', 'leafCount', 'drank', 'pooped'])
+        && data.evening.keys().size() == 5
+        && data.evening.ateLeaf is bool
+        && data.evening.leafType is string && data.evening.leafType.size() <= 100
+        && data.evening.leafCount is string && data.evening.leafCount.size() <= 100
+        && data.evening.drank is bool
+        && data.evening.pooped is bool
+        && (!data.keys().hasAny(['note']) || (data.note is string && data.note.size() <= 5000))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /logs/{logId} {
+      allow read: if isSignedIn() && isVerified() && isValidId(logId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && isVerified() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isVerified() && isValidId(logId)
+                    && isValidLog(incoming())
+                    && incoming().createdAt == request.time
+                    && incoming().updatedAt == request.time;
+      allow update: if isSignedIn() && isVerified() && isValidId(logId)
+                    && existing().userId == request.auth.uid
+                    && isValidLog(incoming())
+                    && incoming().diff(existing()).affectedKeys().hasOnly(['time', 'morning', 'evening', 'note', 'updatedAt'])
+                    && incoming().createdAt == existing().createdAt
+                    && incoming().userId == existing().userId
+                    && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && isVerified() && isValidId(logId) && existing().userId == request.auth.uid;
+    }
+  }
+}
