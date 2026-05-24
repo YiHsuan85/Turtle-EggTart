@@ -1,0 +1,6 @@
+{
+  "name": "蛋塔的日常日記",
+  "description": "A daily log for tracking Danta the turtle's activities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
