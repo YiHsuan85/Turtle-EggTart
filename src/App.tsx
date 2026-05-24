@@ -6,7 +6,22 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('diary');
   const [password, setPassword] = useState('');
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState(() => {
+    const saved = localStorage.getItem('turtle_logs');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
+  
+  React.useEffect(() => {
+    localStorage.setItem('turtle_logs', JSON.stringify(logs));
+  }, [logs]);
+
   const [editingId, setEditingId] = useState(null);
   const [input, setInput] = useState({
     morning: { fed: false, ateAll: false, drank: false, pooped: false },
