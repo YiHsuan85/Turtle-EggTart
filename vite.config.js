@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
   return {
+     // 加上這行，將 'repo-name' 改成你 GitHub 上實際的儲存庫名稱
+    base: mode === 'production' ? '/Turtle-EggTart/' : '/', 
+    
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
