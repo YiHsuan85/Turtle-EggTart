@@ -1,18 +1,30 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
-    branches: [ main ] # 這裡確認是否為你的主分支名稱
+    branches: [ main ] # 確保這與你的預設分支名稱一致
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # 明確指定 Node 版本，避免相容性錯誤
+          cache: 'npm'     # 增加快取，加速以後的建置速度
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist # 這邊要對應到你的編譯產出目錄
+          publish_dir: ./dist
