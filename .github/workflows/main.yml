@@ -1,9 +1,18 @@
-name: CI
-
-on: [push]
-
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [ main ] # 這裡確認是否為你的主分支名稱
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist # 這邊要對應到你的編譯產出目錄
