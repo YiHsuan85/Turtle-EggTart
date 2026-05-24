@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "Log": {
+      "title": "Log",
+      "description": "A daily log entry for Danta the turtle",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID of the owner"
+        },
+        "time": {
+          "type": "string"
+        },
+        "morning": {
+          "type": "object",
+          "properties": {
+            "fed": { "type": "boolean" },
+            "ateAll": { "type": "boolean" },
+            "drank": { "type": "boolean" },
+            "pooped": { "type": "boolean" }
+          },
+          "required": ["fed", "ateAll", "drank", "pooped"]
+        },
+        "evening": {
+          "type": "object",
+          "properties": {
+            "ateLeaf": { "type": "boolean" },
+            "leafType": { "type": "string" },
+            "leafCount": { "type": "string" },
+            "drank": { "type": "boolean" },
+            "pooped": { "type": "boolean" }
+          },
+          "required": ["ateLeaf", "drank", "pooped"]
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "timestamp"
+        }
+      },
+      "required": ["userId", "time", "morning", "evening", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/logs/{logId}": {
+      "schema": "Log",
+      "description": "Collection of turtle daily logs"
+    }
+  }
+}
